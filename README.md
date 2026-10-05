@@ -16,6 +16,9 @@ DNS provider -- DNS records --> server public IP
 Start with **[the setup guide](docs/SETUP.md)**. Then use
 **[the operations guide](docs/OPERATIONS.md)** for updates and daily commands.
 
+For a local trial inside a Kali VM, use **[the separate Kali guide](kali/README.md)**.
+That folder uses a self-signed certificate and needs no public DNS or DNS token.
+
 | File | Purpose |
 | --- | --- |
 | `scripts/install-debian.sh` | Install server packages on fresh Debian 13 |
