@@ -1,0 +1,40 @@
+name: Check server configuration
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Validate Compose and shell scripts
+        run: |
+          docker compose --env-file .env.example config --quiet
+          for script in scripts/*.sh; do bash -n "$script"; done
+      - name: Check Nginx and HTTPS
+        run: |
+          cert_dir=state/letsencrypt/live/server
+          mkdir -p "$cert_dir"
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -keyout "$cert_dir/privkey.pem" -out "$cert_dir/fullchain.pem" \
+            -subj '/CN=server.example.com' \
+            -addext 'subjectAltName=DNS:server.example.com,DNS:second.example.com'
+          docker compose --env-file .env.example run --rm nginx nginx -t
+          docker compose --env-file .env.example up -d
+          for host in server.example.com second.example.com; do
+            curl --fail --silent --show-error --noproxy '*' \
+              --retry 5 --retry-all-errors --retry-delay 2 --max-time 10 \
+              --cacert "$cert_dir/fullchain.pem" \
+              --resolve "$host:443:127.0.0.1" "https://$host/healthz"
+          done
+      - name: Clean up the disposable CI server
+        if: always()
+        run: docker compose --env-file .env.example down --remove-orphans

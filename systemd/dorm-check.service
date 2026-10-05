@@ -1,0 +1,13 @@
+[Unit]
+Description=Check server HTTPS, disk space and certificate
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/dorm-server
+EnvironmentFile=-/opt/dorm-server/secrets/monitor.env
+ExecStart=/bin/bash /opt/dorm-server/scripts/check.sh
+TimeoutStartSec=3min
+UMask=0077

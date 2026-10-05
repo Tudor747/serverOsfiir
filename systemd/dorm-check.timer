@@ -1,0 +1,10 @@
+[Unit]
+Description=Check the dorm server every five minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=5min
+
+[Install]
+WantedBy=timers.target
+

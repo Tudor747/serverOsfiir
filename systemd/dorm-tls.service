@@ -1,0 +1,13 @@
+[Unit]
+Description=Renew HTTPS certificates using DNS validation and reload nginx
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/dorm-server
+ExecStart=/bin/bash /opt/dorm-server/scripts/tls.sh renew
+TimeoutStartSec=15min
+UMask=0077
+

@@ -1,0 +1,24 @@
+name: dorm-server
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "443:443/tcp" # The only published port.
+    environment:
+      SERVER_DOMAIN: ${SERVER_DOMAIN:?Set SERVER_DOMAIN in .env}
+      SECOND_DOMAIN: ${SECOND_DOMAIN:-}
+      NGINX_ENVSUBST_FILTER: "^(SERVER_DOMAIN|SECOND_DOMAIN)$"
+    volumes:
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./state/letsencrypt:/etc/letsencrypt:ro
+    mem_limit: 128m
+    cpus: 0.50
+    pids_limit: 100
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
